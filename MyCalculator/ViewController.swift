@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Foundation
 
 class ViewController: UIViewController {
     
@@ -92,6 +93,7 @@ class ViewController: UIViewController {
         button.backgroundColor = allSigns.contains(sign) ? .red : .gray
         button.layer.cornerRadius = 8
         button.setTitle(sign, for: .normal)
+        button.titleLabel?.font = UIFont(descriptor: UIFontDescriptor(), size: 24)
         button.tag = tag
         button.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         return button
@@ -166,7 +168,12 @@ class ViewController: UIViewController {
     }
     
     func equalPressed() {
+        guard var string = displayLabel.text else { return }
+
+        let mathExpression = NSExpression(format: string)
         
+        guard let res = mathExpression.expressionValue(with: nil, context: nil) as? Int else { return }
+        displayLabel.text = String(res)
     }
     
     func commaPressed() {
