@@ -39,8 +39,8 @@ class ViewController: UIViewController {
         return $0
     }(UIStackView())
     
-    let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],[ "4", "5", "6", "-"], ["7", "8", "9", "*"],[ "del", "AC", "%", "/" ]]
-    let allSigns: [String] = ["=","+","-","*","/","%", "del", "AC"]
+    let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],[ "4", "5", "6", "-"], ["7", "8", "9", "x"],[ "del", "AC", "%", "/" ]]
+    let allSigns: [String] = ["=","+","-","x","/","%", "del", "AC"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -136,7 +136,7 @@ class ViewController: UIViewController {
             switch tag {
             case 7: operationPressed("+")
             case 11: operationPressed("-")
-            case 15: operationPressed("*")
+            case 15: operationPressed("x")
             case 19: operationPressed("/")
             default:
                 print("operation error")
@@ -178,13 +178,15 @@ class ViewController: UIViewController {
         
         guard let string = displayLabel.text else { return }
         
-        let cleanedExpression = string.replacingOccurrences(of: ",", with: ".")
-        let mathExpression = NSExpression(format: cleanedExpression)
+        var expression = string.replacingOccurrences(of: ",", with: ".")
+        expression = expression.replacingOccurrences(of: "x", with: "*")
+        expression = "1.0 * \(expression)"
+        
+        let mathExpression = NSExpression(format: expression)
         
         guard let res = mathExpression.expressionValue(with: nil, context: nil) as? Double else { return }
-        
-        //add clear function to replace . -> , and double -> Int
-        displayLabel.text = String(res)
+
+        clear(res)
     }
     
     func commaPressed() {
@@ -203,6 +205,26 @@ class ViewController: UIViewController {
     func clearAllPressed() {
         displayLabel.text = ""
         answerLabel.text = ""
+    }
+    
+    func clear(_ result: Double) {
+        var resultString = String(result)
+        var ans = ""
+        
+        if resultString.last == "0" {
+            print(1,result)
+            resultString.removeLast()
+            resultString.removeLast()
+            ans = resultString
+
+        } else {
+            print(2,result)
+            ans = resultString.replacingOccurrences(of: ".", with: ",")
+
+        }
+
+        displayLabel.text = ans
+        
     }
 
     private func setConstraints() {
@@ -230,4 +252,3 @@ class ViewController: UIViewController {
     }
 
 }
-
