@@ -12,8 +12,23 @@ class ViewController: UIViewController {
     
     let displayLabel: UILabel = {
         $0.textAlignment = .right
+        $0.contentMode = .bottomRight
         $0.text = ""
         $0.font = .systemFont(ofSize: 40)
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = CGColor(red: 10, green: 10, blue: 10, alpha: 0.5)
+        return $0
+    }(UILabel())
+    
+    let answerLabel: UILabel = {
+        $0.textAlignment = .right
+        $0.contentMode = .bottomRight
+        $0.text = ""
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = CGColor(gray: 100, alpha: 1)
+
+        $0.font = .systemFont(ofSize: 30)
+        $0.textColor = .lightGray
         return $0
     }(UILabel())
     
@@ -33,12 +48,9 @@ class ViewController: UIViewController {
 
         view.addSubview(verticalStack1)
         view.addSubview(displayLabel)
+        view.addSubview(answerLabel)
         
         createAllButtons(from: allLabelsByLinesArray)
-        
-
-//        if allSigns.contains(inputAndOutputLabel.text?.last) {
-//        }
         
         setConstraints()
     }
@@ -78,16 +90,6 @@ class ViewController: UIViewController {
         }
     }
     
-//    func clearButton(_ button: UIButton) {
-//        if button.currentTitle == "del" {
-//            if displayLabel.text != "" {
-//                displayLabel.text!.removeLast()
-//            } else {
-//                displayLabel.text! = ""
-//            }
-//        }
-//    }
-    
     func createButton(with sign: String, tag: Int) -> UIButton {
         let button = UIButton()
         button.backgroundColor = allSigns.contains(sign) ? .red : .gray
@@ -122,7 +124,7 @@ class ViewController: UIViewController {
         }
         // plus/minus button
         if tag == 0 {
-//            plusMinusPressed()
+            plusMinusPressed()
         }
         //comma tag
         if tag == 2 {
@@ -155,6 +157,10 @@ class ViewController: UIViewController {
         }
     }
     
+    func plusMinusPressed() {
+        
+    }
+    
     func numberPressed(_ number: String) {
         displayLabel.text! += number
     }
@@ -168,11 +174,16 @@ class ViewController: UIViewController {
     }
     
     func equalPressed() {
-        guard var string = displayLabel.text else { return }
-
-        let mathExpression = NSExpression(format: string)
+        answerLabel.text = displayLabel.text
         
-        guard let res = mathExpression.expressionValue(with: nil, context: nil) as? Int else { return }
+        guard let string = displayLabel.text else { return }
+        
+        let cleanedExpression = string.replacingOccurrences(of: ",", with: ".")
+        let mathExpression = NSExpression(format: cleanedExpression)
+        
+        guard let res = mathExpression.expressionValue(with: nil, context: nil) as? Double else { return }
+        
+        //add clear function to replace . -> , and double -> Int
         displayLabel.text = String(res)
     }
     
@@ -182,6 +193,8 @@ class ViewController: UIViewController {
         }
     }
     func deleteLastPressed() {
+        answerLabel.text = ""
+        
         if ((displayLabel.text) != nil) && displayLabel.text != "" {
             displayLabel.text?.removeLast()
         }
@@ -189,17 +202,25 @@ class ViewController: UIViewController {
     
     func clearAllPressed() {
         displayLabel.text = ""
+        answerLabel.text = ""
     }
 
     private func setConstraints() {
         verticalStack1.translatesAutoresizingMaskIntoConstraints = false
         displayLabel.translatesAutoresizingMaskIntoConstraints = false
+        answerLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
+            
+            answerLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            answerLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            answerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
+            answerLabel.heightAnchor.constraint(equalToConstant: 50),
+            
             displayLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
             displayLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            displayLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            displayLabel.heightAnchor.constraint(equalToConstant: 200),
+            displayLabel.topAnchor.constraint(equalTo: answerLabel.bottomAnchor, constant: 20),
+            displayLabel.heightAnchor.constraint(equalToConstant: 50),
             
             verticalStack1.topAnchor.constraint(equalTo: displayLabel.bottomAnchor, constant: 20),
             verticalStack1.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
