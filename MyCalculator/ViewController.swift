@@ -14,14 +14,12 @@ class ViewController: UIViewController {
         $0.textAlignment = .right
         $0.text = "0"
         $0.font = .systemFont(ofSize: 40)
-        $0.backgroundColor = .green
         return $0
     }(UILabel())
     
     private let answerLabel: UILabel = {
         $0.text = ""
         $0.font = .systemFont(ofSize: 20)
-        $0.backgroundColor = .green
         $0.textColor = .lightGray
         $0.textAlignment = .right
         return $0
@@ -37,13 +35,14 @@ class ViewController: UIViewController {
     private let answerLabelScrollView: UIScrollView = {
         $0.showsHorizontalScrollIndicator = false
         $0.alwaysBounceHorizontal = true
+        $0.semanticContentAttribute = .forceRightToLeft
         return $0
     }(UIScrollView())
     
     private let displayLabelScrollView: UIScrollView = {
         $0.showsHorizontalScrollIndicator = false
-        $0.contentMode = .bottomRight
         $0.alwaysBounceHorizontal = true
+        $0.semanticContentAttribute = .forceRightToLeft
         return $0
     }(UIScrollView())
     
@@ -114,10 +113,13 @@ class ViewController: UIViewController {
     }
     
     @objc func buttonPressed(_ sender: UIButton) {
-        
+        if displayLabel.text == "0" {
+            displayLabel.text = ""
+        }
         //move expression from left to right
         scrollToRightEnd()
         
+        sender.startAnimatingPressAction()
         let tag = sender.tag
         
         //tag for nums
@@ -215,10 +217,13 @@ class ViewController: UIViewController {
         if ((displayLabel.text) != nil) && displayLabel.text != "" {
             displayLabel.text?.removeLast()
         }
+        if displayLabel.text == "" {
+            displayLabel.text = "0"
+        }
     }
     
     func clearAllPressed() {
-        displayLabel.text = ""
+        displayLabel.text = "0"
         answerLabel.text = ""
     }
     
@@ -244,7 +249,7 @@ class ViewController: UIViewController {
         if contentWidth > scrollViewWidth {
             let offsetX = contentWidth - scrollViewWidth
             displayLabelScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
-        }else {
+        } else {
             displayLabelScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
         }
     }
@@ -260,7 +265,7 @@ class ViewController: UIViewController {
             
             answerLabelScrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
             answerLabelScrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            answerLabelScrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
+            answerLabelScrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 130),
             answerLabelScrollView.heightAnchor.constraint(equalToConstant: 50),
             
             answerLabel.leadingAnchor.constraint(equalTo: answerLabelScrollView.leadingAnchor, constant: 20),
@@ -271,7 +276,7 @@ class ViewController: UIViewController {
             
             displayLabelScrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
             displayLabelScrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            displayLabelScrollView.topAnchor.constraint(equalTo: answerLabelScrollView.bottomAnchor, constant: 20),
+            displayLabelScrollView.topAnchor.constraint(equalTo: answerLabelScrollView.bottomAnchor),
             displayLabelScrollView.heightAnchor.constraint(equalToConstant: 50),
             
             displayLabel.leadingAnchor.constraint(equalTo: displayLabelScrollView.leadingAnchor, constant: 20),
