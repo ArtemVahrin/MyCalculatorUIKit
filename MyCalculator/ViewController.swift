@@ -10,45 +10,57 @@ import Foundation
 
 class ViewController: UIViewController {
     
-    let displayLabel: UILabel = {
+    private let displayLabel: UILabel = {
         $0.textAlignment = .right
-        $0.contentMode = .bottomRight
-        $0.text = ""
+        $0.text = "0"
         $0.font = .systemFont(ofSize: 40)
-        $0.layer.borderWidth = 1
-        $0.layer.borderColor = CGColor(red: 10, green: 10, blue: 10, alpha: 0.5)
+        $0.backgroundColor = .green
         return $0
     }(UILabel())
     
-    let answerLabel: UILabel = {
-        $0.textAlignment = .right
-        $0.contentMode = .bottomRight
+    private let answerLabel: UILabel = {
         $0.text = ""
-        $0.layer.borderWidth = 1
-        $0.layer.borderColor = CGColor(gray: 100, alpha: 1)
-
-        $0.font = .systemFont(ofSize: 30)
+        $0.font = .systemFont(ofSize: 20)
+        $0.backgroundColor = .green
         $0.textColor = .lightGray
+        $0.textAlignment = .right
         return $0
     }(UILabel())
     
-    let verticalStack1: UIStackView = {
+    private let verticalStack1: UIStackView = {
         $0.axis = .vertical
         $0.distribution = .fillEqually
         $0.spacing = 10
         return $0
     }(UIStackView())
     
-    let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],[ "4", "5", "6", "-"], ["7", "8", "9", "x"],[ "del", "AC", "%", "/" ]]
-    let allSigns: [String] = ["=","+","-","x","/","%", "del", "AC"]
+    private let answerLabelScrollView: UIScrollView = {
+        $0.showsHorizontalScrollIndicator = false
+        $0.alwaysBounceHorizontal = true
+        return $0
+    }(UIScrollView())
+    
+    private let displayLabelScrollView: UIScrollView = {
+        $0.showsHorizontalScrollIndicator = false
+        $0.contentMode = .bottomRight
+        $0.alwaysBounceHorizontal = true
+        return $0
+    }(UIScrollView())
+    
+    private let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],["4", "5", "6", "-"], ["7", "8", "9", "x"],[ "del", "AC", "%", "/" ]]
+    private let allSigns: [String] = ["=","+","-","x","/","%", "del", "AC"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-
+        
+        view.addSubview(answerLabelScrollView)
+        view.addSubview(displayLabelScrollView)
         view.addSubview(verticalStack1)
         view.addSubview(displayLabel)
-        view.addSubview(answerLabel)
+        
+        answerLabelScrollView.addSubview(answerLabel)
+        displayLabelScrollView.addSubview(displayLabel)
         
         createAllButtons(from: allLabelsByLinesArray)
         
@@ -60,7 +72,7 @@ class ViewController: UIViewController {
             $0.axis = .horizontal
             $0.distribution = .fillEqually
             $0.spacing = 10
-        return $0
+            return $0
         }(UIStackView())
         
         for button in buttons {
@@ -100,9 +112,12 @@ class ViewController: UIViewController {
         button.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
         return button
     }
-
+    
     @objc func buttonPressed(_ sender: UIButton) {
-//        let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],[ "4", "5", "6", "-"], ["7", "8", "9", "*"],[ "del", "AC", "%", "/" ]]
+        
+        //move expression from left to right
+        scrollToRightEnd()
+        
         let tag = sender.tag
         
         //tag for nums
@@ -141,7 +156,7 @@ class ViewController: UIViewController {
             default:
                 print("operation error")
             }
- 
+            
         }
         //equal  tag
         if tag == 3 {
@@ -184,9 +199,9 @@ class ViewController: UIViewController {
         
         let mathExpression = NSExpression(format: expression)
         
-        guard let res = mathExpression.expressionValue(with: nil, context: nil) as? Double else { return }
-
-        clear(res)
+        guard let result = mathExpression.expressionValue(with: nil, context: nil) as? Double else { return }
+        
+        clearResults(result)
     }
     
     func commaPressed() {
@@ -207,42 +222,63 @@ class ViewController: UIViewController {
         answerLabel.text = ""
     }
     
-    func clear(_ result: Double) {
+    func clearResults(_ result: Double) {
         var resultString = String(result)
         var ans = ""
         
         if resultString.last == "0" {
-            print(1,result)
             resultString.removeLast()
             resultString.removeLast()
             ans = resultString
-
         } else {
-            print(2,result)
             ans = resultString.replacingOccurrences(of: ".", with: ",")
-
         }
-
-        displayLabel.text = ans
         
+        displayLabel.text = ans
     }
-
+    
+    func scrollToRightEnd() {
+        let contentWidth = displayLabelScrollView.contentSize.width
+        let scrollViewWidth = displayLabelScrollView.bounds.width
+        
+        if contentWidth > scrollViewWidth {
+            let offsetX = contentWidth - scrollViewWidth
+            displayLabelScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+        }else {
+            displayLabelScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+        }
+    }
+    
     private func setConstraints() {
         verticalStack1.translatesAutoresizingMaskIntoConstraints = false
         displayLabel.translatesAutoresizingMaskIntoConstraints = false
         answerLabel.translatesAutoresizingMaskIntoConstraints = false
+        answerLabelScrollView.translatesAutoresizingMaskIntoConstraints = false
+        displayLabelScrollView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             
-            answerLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            answerLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            answerLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
-            answerLabel.heightAnchor.constraint(equalToConstant: 50),
+            answerLabelScrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            answerLabelScrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            answerLabelScrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 120),
+            answerLabelScrollView.heightAnchor.constraint(equalToConstant: 50),
             
-            displayLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            displayLabel.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            displayLabel.topAnchor.constraint(equalTo: answerLabel.bottomAnchor, constant: 20),
-            displayLabel.heightAnchor.constraint(equalToConstant: 50),
+            answerLabel.leadingAnchor.constraint(equalTo: answerLabelScrollView.leadingAnchor, constant: 20),
+            answerLabel.trailingAnchor.constraint(equalTo: answerLabelScrollView.trailingAnchor, constant: -20),
+            answerLabel.topAnchor.constraint(equalTo: answerLabelScrollView.topAnchor),
+            answerLabel.bottomAnchor.constraint(equalTo: answerLabelScrollView.bottomAnchor),
+            answerLabel.heightAnchor.constraint(equalTo: answerLabelScrollView.heightAnchor),
+            
+            displayLabelScrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            displayLabelScrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            displayLabelScrollView.topAnchor.constraint(equalTo: answerLabelScrollView.bottomAnchor, constant: 20),
+            displayLabelScrollView.heightAnchor.constraint(equalToConstant: 50),
+            
+            displayLabel.leadingAnchor.constraint(equalTo: displayLabelScrollView.leadingAnchor, constant: 20),
+            displayLabel.trailingAnchor.constraint(equalTo: displayLabelScrollView.trailingAnchor, constant: -20),
+            displayLabel.topAnchor.constraint(equalTo: displayLabelScrollView.topAnchor),
+            displayLabel.bottomAnchor.constraint(equalTo: displayLabelScrollView.bottomAnchor),
+            displayLabel.heightAnchor.constraint(equalTo: displayLabelScrollView.heightAnchor),
             
             verticalStack1.topAnchor.constraint(equalTo: displayLabel.bottomAnchor, constant: 20),
             verticalStack1.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
@@ -250,5 +286,7 @@ class ViewController: UIViewController {
             verticalStack1.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 20)
         ])
     }
-
+    
+    
+    
 }
