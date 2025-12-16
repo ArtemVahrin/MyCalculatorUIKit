@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     private let displayLabel: UILabel = {
         $0.textAlignment = .right
         $0.text = "0"
-        $0.font = .systemFont(ofSize: 40)
+        $0.font = .systemFont(ofSize: 45)
         return $0
     }(UILabel())
     
@@ -104,6 +104,7 @@ class ViewController: UIViewController {
     func createButton(with sign: String, tag: Int) -> UIButton {
         let button = UIButton()
         button.backgroundColor = allSigns.contains(sign) ? .red : .gray
+        button.layer.opacity = 0.8
         button.layer.cornerRadius = 8
         button.setTitle(sign, for: .normal)
         button.titleLabel?.font = UIFont(descriptor: UIFontDescriptor(), size: 24)
