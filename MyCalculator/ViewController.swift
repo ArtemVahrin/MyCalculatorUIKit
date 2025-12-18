@@ -46,8 +46,8 @@ class ViewController: UIViewController {
         return $0
     }(UIScrollView())
     
-    private let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],["4", "5", "6", "-"], ["7", "8", "9", "x"],[ "del", "AC", "%", "/" ]]
-    private let allSigns: [String] = ["=","+","-","x","/","%", "del", "AC"]
+    private let allLabelsByLinesArray: [[String]] = [["+/-","0",",", "="], ["1", "2", "3", "+"],["4", "5", "6", "-"], ["7", "8", "9", "x"],[ "del", "AC", "%", "÷" ]]
+    private let allSigns: [String] = ["=","+","-","x","÷","%", "del", "AC"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -149,13 +149,14 @@ class ViewController: UIViewController {
             commaPressed()
         }
         //operations tags
-        if tag == 7 || tag == 11 || tag == 15 || tag == 19 {
+        if tag == 7 || tag == 11 || tag == 15 || tag == 19 || tag == 18 {
             
             switch tag {
             case 7: operationPressed("+")
             case 11: operationPressed("-")
             case 15: operationPressed("x")
-            case 19: operationPressed("/")
+            case 19: operationPressed("÷")
+            case 18: operationPressed("%")
             default:
                 print("operation error")
             }
@@ -187,6 +188,8 @@ class ViewController: UIViewController {
         if let lastSign = displayLabel.text?.last {
             if !allSigns.contains(String(lastSign)) {
                 displayLabel.text! += operation
+            } else if lastSign == "%" {
+                displayLabel.text! += operation
             }
         }
     }
@@ -195,15 +198,17 @@ class ViewController: UIViewController {
         answerLabel.text = displayLabel.text
         
         guard let string = displayLabel.text else { return }
-        
+
         var expression = string.replacingOccurrences(of: ",", with: ".")
         expression = expression.replacingOccurrences(of: "x", with: "*")
+        expression = expression.replacingOccurrences(of: "÷", with: "/")
         expression = "1.0 * \(expression)"
         
+        expression = preprocessProcentsInExpression(expression)
+        
         let mathExpression = NSExpression(format: expression)
-        
+
         guard let result = mathExpression.expressionValue(with: nil, context: nil) as? Double else { return }
-        
         clearResults(result)
     }
     
@@ -229,7 +234,8 @@ class ViewController: UIViewController {
     }
     
     func clearResults(_ result: Double) {
-        var resultString = String(result)
+        let roundedResult = (result * 1_000_000).rounded() / 1_000_000
+        var resultString = String(describing: roundedResult)
         var ans = ""
         
         if resultString.last == "0" {
@@ -239,7 +245,7 @@ class ViewController: UIViewController {
         } else {
             ans = resultString.replacingOccurrences(of: ".", with: ",")
         }
-        
+        print(ans)
         displayLabel.text = ans
     }
     
@@ -253,6 +259,24 @@ class ViewController: UIViewController {
         } else {
             displayLabelScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
         }
+    }
+    
+    func preprocessProcentsInExpression(_ expression: String) -> String {
+        var result = expression
+//        100*20% -> 100*0.2
+        result = result.replacingOccurrences(of: "([\\d.]+)\\*([\\d.]+)%", with: "$1*($2/100.0)", options: .regularExpression)
+        
+        //100 + 20% -> 100*1.2
+        result = result.replacingOccurrences(of: "([\\d.])\\+([\\d.]+)%", with: "$1*(1+$2/100.0)", options: .regularExpression)
+        
+        //100 - 20% -> 100*0.8
+        result = result.replacingOccurrences(of: "([\\d.])\\-([\\d.]+)%", with: "$1*(1-$2/100.0)", options: .regularExpression)
+        
+        //20% -> 0.2
+        if result.contains("%") {
+            result = result.replacingOccurrences(of: "%", with: "/100.0")
+        }
+        return result
     }
     
     private func setConstraints() {
@@ -292,7 +316,6 @@ class ViewController: UIViewController {
             verticalStack1.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 20)
         ])
     }
-    
     
     
 }
