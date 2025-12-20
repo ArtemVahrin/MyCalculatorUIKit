@@ -39,20 +39,22 @@ class CalculatorLogic {
     func canAddOperation(_ lastChar: Character) -> Bool {
         return !allSigns.contains(String(lastChar)) || lastChar == "%"
     }
-    
+    //TODO: Need to Refactor
     func changeSign(_ expression: String) -> String {
         var expression = expression
         
         if let lastChar = expression.last{
-        if isExpressionContainsOperations(expression) == false {
-            expression = addParenthesesToBeginning(in: expression)
-        } else {
-            if canAddOperation(lastChar) && !expression.hasSuffix(")") {
-                expression = addParentheses(in: expression)
-            } else if expression.hasSuffix(")") {
+            if isExpressionContainsOperations(expression) == false {
+                expression = addParenthesesToBeginning(in: expression)
+            } else if isExpressionContainsOperations(expression) == false && expression.hasSuffix(")") {
                 expression = expression.replacingNegativeNumberWithPositive()
+            } else {
+                if canAddOperation(lastChar) && !expression.hasSuffix(")") {
+                    expression = addParentheses(in: expression)
+                } else if expression.hasSuffix(")") {
+                    expression = expression.replacingNegativeNumberWithPositive()
+                }
             }
-        }
             
         }
         return expression
