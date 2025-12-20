@@ -39,7 +39,6 @@ class ViewController: UIViewController {
         createScrollView()
     }()
 
-    
     private var calculatorLogic = CalculatorLogic()
     
     override func viewDidLoad() {
@@ -161,10 +160,14 @@ class ViewController: UIViewController {
         
         if contentWidth > scrollViewWidth {
             let offsetX = contentWidth - scrollViewWidth
-            displayScrollView.setContentOffset(CGPoint(x: offsetX, y: 0), animated: true)
+            displayScrollView.setContentOffset(CGPoint(x: offsetX + 5, y: 0), animated: true)
         } else {
             displayScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
         }
+    }
+    
+    private func scrollToLeftEnd() {
+        displayScrollView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
     }
     
     //MARK: - Calculator Opeartion
@@ -221,6 +224,9 @@ class ViewController: UIViewController {
         }
         
         let formattedResult = calculatorLogic.formatResult(result)
+        
+        scrollToLeftEnd()
+        
         displayLabel.text = formattedResult
     }
     
