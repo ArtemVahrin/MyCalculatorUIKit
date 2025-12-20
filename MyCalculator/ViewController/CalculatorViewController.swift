@@ -212,7 +212,8 @@ class ViewController: UIViewController {
     }
     
     private func togglePlusMinus() {
-        //TODO: implement plus/minus logic
+        guard let currentExpression = displayLabel.text else { return }
+        displayLabel.text = calculatorLogic.changeSign(currentExpression)
     }
     
     private func calculateResult() {

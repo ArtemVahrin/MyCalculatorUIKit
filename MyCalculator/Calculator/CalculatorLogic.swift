@@ -40,6 +40,57 @@ class CalculatorLogic {
         return !allSigns.contains(String(lastChar)) || lastChar == "%"
     }
     
+    func changeSign(_ expression: String) -> String {
+        var expression = expression
+        
+        if let lastChar = expression.last{
+        if isExpressionContainsOperations(expression) == false {
+            expression = addParenthesesToBeginning(in: expression)
+        } else {
+            if canAddOperation(lastChar) && !expression.hasSuffix(")") {
+                expression = addParentheses(in: expression)
+            } else if expression.hasSuffix(")") {
+                expression = expression.replacingNegativeNumberWithPositive()
+            }
+        }
+            
+        }
+        return expression
+    }
+    
+    private func isExpressionContainsOperations(_ expression: String) -> Bool {
+        for char in expression {
+            if allSigns.contains(String(char)) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func addParentheses(in expression: String) -> String {
+        var expression = expression
+        
+        for (index,char) in expression.enumerated().reversed() {
+            if allSigns.contains(String(char)) {
+                expression.insert(contentsOf: "(-", at: String.Index(utf16Offset: index + 1, in: expression))
+                expression.append(")")
+                
+                break
+            }
+        }
+        return expression
+    }
+    
+    private func addParenthesesToBeginning(in expression: String) -> String {
+        var expression = expression
+    
+        expression.insert(contentsOf: "(-", at: String.Index(utf16Offset: 0, in: expression))
+        expression.append(")")
+        
+        return expression
+    }
+    
+    
     private func preprocessExpression(_ expression: String) -> String {
         
         var expression = expression.replacingOccurrences(of: ",", with: ".")
@@ -53,7 +104,7 @@ class CalculatorLogic {
         return expression
     }
     
-    func preprocessProcents(_ expression: String) -> String {
+    private func preprocessProcents(_ expression: String) -> String {
         var result = expression
         //100*20% -> 100*0.2
         result = result.replacingOccurrences(of: "([\\d.]+)\\*([\\d.]+)%", with: "$1*($2/100.0)", options: .regularExpression)
@@ -72,3 +123,25 @@ class CalculatorLogic {
     }
 }
 
+extension String {
+    func replacingNegativeNumberWithPositive() -> String {
+        let pattern = "\\(-([\\d.]+)\\)"
+        
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let lastMatch = regex.matches(in: self,
+                                            range: NSRange(self.startIndex..., in: self)).last,
+              let range = Range(lastMatch.range, in: self) else {
+            return self
+        }
+        var result = self
+        
+        let negativeNumber = String(self[range])
+        let positiveNumber = negativeNumber
+            .replacingOccurrences(of: "[()]", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "^--?", with: "", options: .regularExpression)
+        
+        result.replaceSubrange(range, with: positiveNumber)
+        print(negativeNumber, result)
+        return result
+    }
+}
