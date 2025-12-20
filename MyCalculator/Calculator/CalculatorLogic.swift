@@ -105,7 +105,7 @@ class CalculatorLogic {
         
         return expression
     }
-    
+    //TODO: incorrectly calculates percents with negative numbers
     private func preprocessProcents(_ expression: String) -> String {
         var result = expression
         //100*20% -> 100*0.2
